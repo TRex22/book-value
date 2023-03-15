@@ -1,0 +1,3 @@
+#!/bin/bash
+gem build book-value.gemspec
+gem push book-value
