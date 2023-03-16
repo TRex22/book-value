@@ -38,49 +38,59 @@ module BookValue
       options
     end
 
+    # TODO: Fix model to try `-`
     def car_features(make, model)
-      raw_page = authorise_and_send(http_method: :get, command: "calculate/#{make.downcase}/#{model.downcase.gsub(' ', '')}")
-      doc = Nokogiri::HTML(raw_page['body'])
+      process_model(model) do |model_name|
+        raw_page = authorise_and_send(http_method: :get, command: "calculate/#{make.downcase}/#{model_name}")
+        next if raw_page == {}
 
-      raw_page = authorise_and_send(http_method: :get, command: "calculate/#{make.downcase}/#{model.downcase.gsub(' ', '')}")
-      doc = Nokogiri::HTML(raw_page['body'])
+        doc = Nokogiri::HTML(raw_page['body'])
 
-      checkbox_options = {}
+        checkbox_options = {}
 
-      doc.css(".list-group li div").each do |checkbox|
-        input_of_child = checkbox.children.find { |child| child.name == 'input' }
-        label_of_child = checkbox.children.find { |child| child.name == 'label' }
+        doc.css(".list-group li div").each do |checkbox|
+          input_of_child = checkbox.children.find { |child| child.name == 'input' }
+          label_of_child = checkbox.children.find { |child| child.name == 'label' }
 
-        checkbox_options[input_of_child[:name]] = label_of_child.children.first.to_s
+          checkbox_options[input_of_child[:name]] = label_of_child.children.first.to_s
+        end
+
+        return checkbox_options
       end
-
-      checkbox_options
     end
 
     # Features are just the list of features
     # condition_score is between 1-10, 10 is perfect, 1 is bad
     def get_book_value(make, model, features, mileage, year, condition_score = 10)
-      feature_params = ""
+      process_model(model) do |model_name|
+        feature_params = ""
 
-      features.each do |feature_id|
-        feature_params = "#{feature_params}#{feature_id}=on&"
+        features.each do |feature_id|
+          feature_params = "#{feature_params}#{feature_id}=on&"
+        end
+
+        feature_params = feature_params[0..-2]
+
+        milage_form_page = authorise_and_send(http_method: :post, payload: feature_params, command: "calculate/#{make.downcase}/#{model_name}")
+        next if milage_form_page == {}
+
+        condition_url = milage_form_page['headers']['location']
+
+        _condition_page = HTTParty.post(condition_url, body: "mileage=#{mileage}&year=#{year}")
+
+        book_value_url = condition_url.gsub('/4', '/5')
+        book_value_page = HTTParty.post(book_value_url, body: "condition_score=#{condition_score}")
+
+        doc = Nokogiri::HTML(book_value_page.body)
+        return doc.at('h4').text
       end
-
-      feature_params = feature_params[0..-2]
-
-      milage_form_page = authorise_and_send(http_method: :post, payload: feature_params, command: "calculate/#{make.downcase}/#{model.downcase.gsub(' ', '')}")
-      condition_url = milage_form_page['headers']['location']
-
-      _condition_page = HTTParty.post(condition_url, body: "mileage=#{mileage}&year=#{year}")
-
-      book_value_url = condition_url.gsub('/4', '/5')
-      book_value_page = HTTParty.post(book_value_url, body: "condition_score=#{condition_score}")
-
-      doc = Nokogiri::HTML(book_value_page.body)
-      doc.at('h4').text
     end
 
     private
+
+    def process_model(model)
+      [model.downcase.gsub(' ', ''), model.downcase.gsub(' ', '-')]
+    end
 
     def img_path(name)
       "#{base_path}/data/makes/#{snake_case(name)}"
