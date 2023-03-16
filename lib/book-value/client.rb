@@ -40,13 +40,13 @@ module BookValue
 
     # TODO: Fix model to try `-`
     def car_features(make, model)
+      checkbox_options = {}
+
       process_model(model) do |model_name|
         raw_page = authorise_and_send(http_method: :get, command: "calculate/#{make.downcase}/#{model_name}")
         next if raw_page == {}
 
         doc = Nokogiri::HTML(raw_page['body'])
-
-        checkbox_options = {}
 
         doc.css(".list-group li div").each do |checkbox|
           input_of_child = checkbox.children.find { |child| child.name == 'input' }
@@ -54,17 +54,18 @@ module BookValue
 
           checkbox_options[input_of_child[:name]] = label_of_child.children.first.to_s
         end
-
-        return checkbox_options
       end
+
+      checkbox_options
     end
 
     # Features are just the list of features
     # condition_score is between 1-10, 10 is perfect, 1 is bad
     def get_book_value(make, model, features, mileage, year, condition_score = 10)
-      process_model(model) do |model_name|
-        feature_params = ""
+      output = ''
+      feature_params = ''
 
+      process_model(model) do |model_name|
         features.each do |feature_id|
           feature_params = "#{feature_params}#{feature_id}=on&"
         end
@@ -82,8 +83,11 @@ module BookValue
         book_value_page = HTTParty.post(book_value_url, body: "condition_score=#{condition_score}")
 
         doc = Nokogiri::HTML(book_value_page.body)
-        return doc.at('h4').text
+
+        output = doc.at('h4').text
       end
+
+      output
     end
 
     private
