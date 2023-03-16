@@ -59,7 +59,7 @@ module BookValue
 
     # Features are just the list of features
     # condition_score is between 1-10, 10 is perfect, 1 is bad
-    def get_book_value(make, model, features, mileage, year, condition_score)
+    def get_book_value(make, model, features, mileage, year, condition_score = 10)
       feature_params = ""
 
       features.each do |feature_id|

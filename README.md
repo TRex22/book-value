@@ -31,7 +31,7 @@ Or install it yourself as:
   client = BookValue::Client.new
 
   # Some example calls
-  client.car_models
+  client.car_makes
   client.car_models(make)
   client.car_features(make, model)
   client.get_book_value(make, model, features, mileage, year, condition_score)
