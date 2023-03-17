@@ -38,13 +38,11 @@ module BookValue
       options
     end
 
-    # TODO: Fix model to try `-`
     def car_features(make, model)
       checkbox_options = {}
 
-      process_model(model) do |model_name|
+      process_model(model).each do |model_name|
         raw_page = authorise_and_send(http_method: :get, command: "calculate/#{make.downcase}/#{model_name}")
-        next if raw_page == {}
 
         doc = Nokogiri::HTML(raw_page['body'])
 
@@ -65,7 +63,7 @@ module BookValue
       output = ''
       feature_params = ''
 
-      process_model(model) do |model_name|
+      process_model(model).each do |model_name|
         features.each do |feature_id|
           feature_params = "#{feature_params}#{feature_id}=on&"
         end
@@ -73,7 +71,7 @@ module BookValue
         feature_params = feature_params[0..-2]
 
         milage_form_page = authorise_and_send(http_method: :post, payload: feature_params, command: "calculate/#{make.downcase}/#{model_name}")
-        next if milage_form_page == {}
+        next unless milage_form_page['metadata']['ok']
 
         condition_url = milage_form_page['headers']['location']
 
@@ -142,7 +140,8 @@ module BookValue
       {
         'start_time' => start_time,
         'end_time' => end_time,
-        'total_time' => total_time
+        'total_time' => total_time,
+        'ok' => response.ok?
       }
     end
 
