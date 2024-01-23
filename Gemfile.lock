@@ -1,10 +1,10 @@
 PATH
   remote: .
   specs:
-    book-value (0.0.6)
+    book-value (0.0.7)
       active_attr (~> 0.16.0)
       httparty (~> 0.21.0)
-      nokogiri (~> 1.15.4)
+      nokogiri (~> 1.16.0)
 
 GEM
   remote: https://rubygems.org/
@@ -66,7 +66,7 @@ GEM
       nokogiri (>= 1.12.0)
     method_source (1.0.0)
     mini_mime (1.1.5)
-    minitest (5.20.0)
+    minitest (5.21.2)
     minitest-focus (1.4.0)
       minitest (>= 4, < 6)
     minitest-reporters (1.6.1)
@@ -78,9 +78,9 @@ GEM
       ruby2_keywords (>= 0.0.5)
     multi_xml (0.6.0)
     mutex_m (0.2.0)
-    nokogiri (1.15.4-arm64-darwin)
+    nokogiri (1.16.0-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.15.4-x86_64-linux)
+    nokogiri (1.16.0-x86_64-linux)
       racc (~> 1.4)
     pry (0.14.2)
       coderay (~> 1.1)
@@ -118,7 +118,7 @@ PLATFORMS
 
 DEPENDENCIES
   book-value!
-  minitest (~> 5.20.0)
+  minitest (~> 5.21.2)
   minitest-focus (~> 1.4.0)
   minitest-reporters (~> 1.6.1)
   mocha (~> 2.1.0)
@@ -128,4 +128,4 @@ DEPENDENCIES
   webmock (~> 3.19.1)
 
 BUNDLED WITH
-   2.4.21
+   2.5.5
